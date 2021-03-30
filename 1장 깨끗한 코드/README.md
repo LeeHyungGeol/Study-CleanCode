@@ -100,6 +100,7 @@
 5. 론 제프리스 : Extreme Programming Installed 와 Extreme Programming Adventure in C# 저자
    
    **중복을 피하라, 한 기능만 수행하라, 표현력을 높여라(의미 있는 이름), 초반 부터 간단한 추상화를 고려하라**
+   * 초반 부터 간단한 추상화를 고려하라 : ex) Map<Long, Member> store = new HashMap<>();
 
 6. 워드 커닝햄 : 위키(Wiki) 창시자, 피트(Fit) 창시자, 익스트림 프로그래밍(eXtreme Programming) 공동 창시자, 스몰토크(Smalltalk)와 객체지향(OOP)의 정신적 지도자 등
    
