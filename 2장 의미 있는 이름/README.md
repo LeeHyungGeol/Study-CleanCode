@@ -96,13 +96,13 @@ ex) accountList -> accountGroup, bunchOfAccounts, Accounts
 
 3. 서로 흡사한 이름을 사용하지 않도록 주의한다. 
 
-ex) 한 모듈에서 XYZControllerForEfficientHandlingOfStrings, 조금 떨어진 다른 모듈에서 XYZControllerForEfficientStoragefStrings
+ex) 한 모듈에서 XYZControllerForEfficientHandlingOfStrings, 조금 떨어진 다른 모듈에서 XYZControllerForEfficientStoragOfStrings
 
 4. 유사한 개념은 유사한 표기법을 사용한다. 여기서 중요한건 `일관성`이다. 일관성을 떨어트리지 말자.
 
 ## 이름 짓는 규칙 - 3. 의미 있게 구분하라
 
-1. 연속된 숫자를 덧붙이거나 불용어(noise word)를 추가하는 방식은 안된다.
+연속된 숫자를 덧붙이거나 불용어(noise word)를 추가하는 방식은 안된다.
 
 ex) 연속된 숫자
 
@@ -153,7 +153,7 @@ private Date generationTimestamp;
 
 ```java
 Bad
-for (int j = 0; j < 34; ++j>)
+for (int j = 0; j < 34; ++j)
     s += (t[j] * 4) / 5;
 
 -->
@@ -162,7 +162,7 @@ Good
 int realDaysPerIdelDay = 4;
 const int WORK_DAYS_PER_WEEK = 5;
 int sum = 0;
-for(int j=0;j < NUMBER_OF_TASKS; ++j) {
+for(int j = 0; j < NUMBER_OF_TASKS; ++j) {
     int realTaskDays = taskEstimates[j] * realDaysPerIdelDay;
     int realTaskWeeks = (realTaskDays / WORK_DAYS_PER_WEEK);
     sum += realTaskWeeks;
@@ -287,4 +287,137 @@ ex) JobQueue, SingletonInstance 등
 적절한 기술 이름(프로그래머 용어)이 없는 경우, 문제 영역(domain)에서 이름을 가져온다.
 
 ## 이름 짓는 규칙 - 14. 의미 있는 맥락을 추가하라
+
+스스로 의미가 분명한 이름은 많지 않다.
+
+* `클래스, 함수, namespace 등`으로 이름을 감싸서 맥락(Context)를 부여한다.
+* 모든 방법이 실패하면 `마지막 수단`으로 `접두어`를 붙인다.
+
+ex1)
+
+```java
+Bad //주소를 의미하는 변수들이지만 어느 메서드가 state 하나만 사용한다면 주소의 일부라는 것을 빨리 알아채지 못한다.
+private String firstName, lastName, street, housenNumber, city, state, zipcode;
+
+-->
+
+Good // addr 이라는 접두어를 추가하자.
+private String addrFirstName, addrLastName, addrStreet...;
+
+-->
+Excellent // 접두어를 붙이기 보다는 Address class 를 만들자.
+public class Address {
+    private String firstName;
+    private String lastName;
+    private String street;
+    ...
+}
+```
+
+ex2)
+
+```java
+Bad
+private void printGuessStatistics(char candidate, int count) {
+    String number;
+    String verb;
+    String pluralModifier;
+    
+    if (count == 0) {
+        number = "no";
+        verb = "are";
+        pluralModifier = "s";
+    } else if (count == 1) {
+        number = "1";
+        verb = "is";
+        pluralModifier = "";
+    } else {
+        number = Integer.toString(count);
+        verb = "are";
+        pluralModifier = "s";
+    }
+    
+    String guessMessage = String.format(
+        "There %s %s %s", verb, number, candidate, pluralModifier
+    );
+
+    print(guessMessage);
+}
+```
+
+* 일단 변수에는 좀 더 의미있는 맥락이 필요해보이지는 않는다.
+* 함수 이름(printGuessStatistics)이 맥락을 제공하며, 알고리즘이 나머지 맥락을 제공한다.
+* 하지만, 함수를 끝까지 읽고 나서야 number, verb, pluralModifier 라는 변수 3개가 GuessStatistics message에 어떻게 사용된다는 것을 알 수 있다.
+* 불행하게도, **독자**가 **맥락을 유추**해야만 하는 것이다.
+* 메서드만 훑어서는 세 변수의 의미가 불분명하다.
+
+
+```java
+public class GuessStatisticsMessage {   
+    private String number;
+    private String verb;
+    private String pluralModifier;
+
+    public String make(char candidate, int count) {
+        createPluralDependentMessageParts(count);
+        return String.format(
+            "There %s %s %s", verb, number, candidate, pluralModifier   
+        );
+    }
+
+    private void createPluralDependentMessageParts(int count) {
+        if (count == 0) {
+            thereAreNoLetters();
+        } else if(count == 1) {
+            thereIsOneLetter();
+        } else {
+            thereAreManyLetters(count);
+        }
+    }
+
+    private void thereAreManyLetters(int count) {
+        number = Integer.toString(count);
+        verb = "are";
+        pluralModifier = "s";
+    }
+
+    private void thereIsOneLetter() {
+        number = "1";
+        verb = "is";
+        pluralModifier = "";
+    }
+
+    private void thereAreNoLetters() {
+        number = "no";
+        verb = "are";
+        pluralModifier = "s";
+    }
+}
+```
+
+* GuessStatisticsMessage 라는 class 를 만들어서 세 변수의 `맥락`을 분명하게 밝혔다.
+* 맥락을 개선하면 함수를 쪼개기도 쉬워지고, 알고리즘도 명확해진다.
+
+## 이름 짓는 규칙 - 15. 불필요한 맥락을 없애라
+
+모든 클래스를 아우르는 맥락을 이름에 넣지 말자.
+* IDE 에서 검색하기에도 좋지 못하다.
+* 일반적으로는 짧은 이름이 긴 이름보다 좋다.(단, 의미가 분명한 경우에 한해서다)
+
+```JAVA
+Bad
+package com.gsd;
+public class GSDAccountAddress
+```
+-->
+
+```java
+Good
+package com.gsd;
+public class Address
+```
+
+## 마지막으로
+
+다른 개발자의 반대를 두려워 하지 말고 좋은 이름으로 바꾸는 연습을 `꾸준히` 하며 `코드 가독성`을 높이자!
 
