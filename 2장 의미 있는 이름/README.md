@@ -204,7 +204,7 @@ public class Part {
 }
 ```
 
-3. 인터페리스 클래스와 구현 클래스 -> 인코딩 필요
+3. 인터페이스 클래스와 구현 클래스 -> 인코딩 필요
 
 Abstract Factory 와 같은 인터페이스 클래스(Interface Class)와 그것을 구현하는 구체 클래스(Concrete Class)가 있을 때
 * 인터페이스 클래스보다 `구체 클래스`에 인코딩을 하는 것이 좋다!
