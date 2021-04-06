@@ -138,14 +138,216 @@ public class EmployeeFactoryImpl implements EmployeeFactory {
 
 ex) includeSetUpandTearDownPages, includeSetUpPages, includeSuiteSetUpPage
 
-## 함수 인수
+## 함수 잘 만드는 법 - 6. 함수 `인수`
 
-함수 인수는 적을 수록 좋다!
+함수 **`인수`** 는 적을 수록 좋다!
 
 * 최선은 입력 인수가 없는 경우(0개 (무항)), 차선은 입력 인수가 1개(단항)뿐인 경우이다.
 * 출력인수는 함수의 반환 값이 아닌 입력 인수로 결과를 받는 경우라면, 이해하기 어려우므로 왠만하면 쓰지 않는 것이 좋다.
 
-### 많이 쓰는 단항 형식
+### **많이 쓰는 단항 형식**
+
+1. **`인수`** 에 `질문`을 던지는 경우
+
+ex) `boolean fileExists("MyFile");`
+
+2. **`인수`** 를 뭔가로 `변환`해 `결과를 반환`하는 경우
+
+ex) `InputStream fileOpne("MyFile");`
+
+3. 이벤트 함수인 경우 : 이벤트 함수는 입력 인수만 있다. 출력 인수를 없다.
+
+ex) `passwordAttemptsNTimes(int attempts);`
+
+이외의 경우라면 단항 함수는 가급적 피한다.
+
+### **플래그 인수**
+
+플래그(flag) 인수는 추하다. 함수로 부울(boolean) 값을 넘기는 관례는 끔찍하다.
+
+함수가 대놓고 **여러 가지**를 처리한다고 광고하는 셈이기 때문이다.
+
+### **이항 함수**
+
+인수가 2개인 함수는 인수가 1개인 함수보다 이해하기 어렵다.
+
+ex) `writeField(name); vs writeField(outputStream, name);`
+* 둘 다 의미는 명백하지만 전자가 더 쉽고 이해도 더 빨리 된다.
+
+ex2) `assertEquals(expected, actual);`
+
+Point class 와 같은 경우는 이항 항수가 적절한 경우이다. Point class 는 오히려 인자가 1개이면 더 놀란다.
+
+ex) `Point p = new Point(1, 1);`
+
+이항 함수가 무조건 나쁘다는 것은 아니다. 불가피한 경우도 물론 있다. 위헝의 소지가 있으므로 가능하면 단항 함수로 바꾸도록 하자.
+
+### **삼항 함수**
+
+인수가 3개인 함수는 당연히 이해하기 더 어렵다. 위험도 2배 이상으로 많아진다. 삼항 함수를 만들 때는 더 신중하게 고려하라.
+
+ex) `assertEquals(message, expected, actual);` 첫 인수가 expected 일 것이라고 예상하고 주춤하게 된다.
+
+### **인수 객체**
+
+인수가 2, 3개 필요하다면 일부를 독자적인 클래스로 만들어서 하나의 인수로 만들자.
+
+ex) `Circle makeCircle(double x, double y, double radius);`
+
+-> `Circle makeCircle(Point center, double radius);`
+
+* 위 예시에서 x, y를 묶었듯이 변수를 묶어 넘기려면 `이름`을 붙여야 하므로 결국은 `개념`을 표현하게 된다.
+
+### **인수 목록**
+
+인수 개수가 가변적인 함수도 필요하다. String.format 메서드
+
+ex) `String.format("%s worked %.2f" hours.", name, hours);`
+
+-> `public String format(String format, Object... args);`
+
+사실상 `이항 함수`다. 이와 같은 형식으로 단항, 이항, 삼항이 있을 수 있지만 이를 넘어서는 인수는 문제가 있다.
+
+### **동사와 키워드**
+
+단항 함수는 **함수와 인수**가 **동사/명사 쌍**을 이루어야 한다.
+
+ex) writeField(name);
+
+함수 이름에 **키워드**를 추가하는 형식이다.
+
+ex) `assertEquals(expected, actual);` -> `assertExpectedEqualsActual(expected, actual);`
+
+## 함수 잘 만드는 법 - 7. 부수 효과를 일으키지 마라
+
+부수 효과는 거짓말이다. 함수에서 한 가지를 하겠다고 약속하고선 **몰래** 다른 짓도 한다는 뜻이다. ***함수에서는 한 가지 일만 시키자!!***
+
+```java
+public class UserValidator {
+	private Cryptographer cryptographer;
+	public boolean checkPassword(String userName, String password) { 
+		User user = UserGateway.findByName(userName);
+		if (user != User.NULL) {
+			String codedPhrase = user.getPhraseEncodedByPassword(); 
+			String phrase = cryptographer.decrypt(codedPhrase, password); 
+			if ("Valid Password".equals(phrase)) {
+				Session.initialize();
+				return true; 
+			}
+		}
+		return false; 
+	}
+}
+```
+
+* checkPassword 함수 중 Session.initialize(); 는 함수명과는 맞지 않는 부수 효과이다.
+* checkPasswordAndInitializeSession 이라는 이름이 훨씬 낫다. 하지만, 이 경우도 한 가지 일만 한다는 것에 위배된다.
+### 출력 인수
+
+일반적으로 프로그래머는 함수 인수를 입력 인수로 인지한다. 출력 인수는 피해야 한다. 
+
+함수에서 상태를 변경해야 한다면, 함수가 속한 객체 상태를 변경하자.
+
+## 함수 잘 만드는 법 - 8. 명령과 조회를 분리하라
+
+함수가 하는 역할은 2가지이다. 한 함수에 한 가지 일만 해야한다. 둘 다 하면 안된다.
+
+1. 뭔가를 수행한다. (객체 상태를 변경한다.) -> 명령
+2. 뭔가에 답한다. (객체 정보를 반환한다.) -> 조회
+
+ex) `public boolean set(String attribute, String value);`
+
+-> `if(set("username, "uncleBob"))`
+
+* 위 함수는 이름이 attribute인 속성을 찾아 값을 value로 설정한 후 성공하면 true, 실패하면 false를 반환한다. 
+* 명령과 조회를 한 함수에서 했기 때문에 if(set()) 과 같은 괴상한 코드가 나온다.
+
+```java
+if (attributeExists("username")) {
+    setAttribute("username", "uncleBob");
+    ...
+}
+```
+
+* 명령과 조회를 분리해서 혼란을 주지 말자!
+
+## 함수 잘 만드는 법 - 9. 오류 코드보다 예외를 사용하라
+
+명령 함수에서 오류 코드 사용의 문제점
+
+1. 오류 코드를 반환하면 호출자는 오류 코드를 곧바로 처리해야 한다.
+2. 의존성 자석(dependdency magnet) : 오류 코드의 등록/ 수정/ 삭제 가 일어날 경우 해당 오류 코드의 처리 코드도 처리해야 한다.
+
+```java
+public enum Error { //오류 코드를 enum 클래스로 정리
+	OK,
+	INVALID,
+	NO_SUCH,
+	LOCKED,
+	OUT_OF_RESOURCES, 	
+	WAITING_FOR_EVENT;
+}
+```
+
+
+오류 처리도 `한 가지` 작업 이므로 오류 처리 함수는 try/catch 문을 사용하여 오류를 처리하는 함수는 오류 처리만 하도록 해야 한다.
+
+```java 
+Bad 
+if (deletePage(page) == E_OK) {
+	if (registry.deleteReference(page.name) == E_OK) {
+		if (configKeys.deleteKey(page.name.makeKey()) == E_OK) {
+			logger.log("page deleted");
+		} else {
+			logger.log("configKey not deleted");
+		}
+	} else {
+		logger.log("deleteReference from registry failed"); 
+	} 
+} else {
+	logger.log("delete failed"); return E_ERROR;
+} 
+
+--> 
+//오류 코드 대신 예외를 적용하여 오류 처리 코드가 원래 코드에서 분리되므로 깔끔해진다.
+Good
+try {
+	deletePage(page);
+    registry.deleteReference(page.name);
+    configKeys.deleteKey(page.name.makeKey());
+} catch (Exception e) {
+  	logger.log(e.getMessage());
+}
+
+-->
+
+//정상 동작과 오류 처리 동작을 try/catch 블록에서 별도의 `함수`로 뽑아낸다.
+Excellent 
+public void delete(Page page) {
+	try {
+		deletePageAndAllReferences(page);
+  	} catch (Exception e) {
+  		logError(e);
+  	}
+}
+//정상 동작
+private void deletePageAndAllReferences(Page page) throws Exception { 
+	deletePage(page);
+	registry.deleteReference(page.name); 
+	configKeys.deleteKey(page.name.makeKey());
+}
+//오류 처리 동작
+private void logError(Exception e) { 
+	logger.log(e.getMessage());
+}
+```
+
+* 오류 코드 대신 예외를 적용하여 오류 처리 코드가 원래 코드에서 분리되므로 깔끔해진다.
+* 정상 동작과 오류 처리 동작을 try/catch 블록에서 별도의 `함수`로 뽑아낸다.
+
+## 함수 잘 만드는 법 - 10. 반복하지 마라 
+
+
 
 
 
