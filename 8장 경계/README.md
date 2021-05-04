@@ -212,7 +212,6 @@ Adapter 가 구현(implements) 하는 인터페이스이다. **클라이언트�
 
 예시 code)
 ```java
-// Adapter
 public class WebClient {
     private WebRequester webRequester;
 
@@ -244,6 +243,7 @@ public class FancyRequester {
     }
 }
 
+// Adapter
 public class WebAdapter implements WebRequester {
     private FancyRequester fancyRequester;
 
