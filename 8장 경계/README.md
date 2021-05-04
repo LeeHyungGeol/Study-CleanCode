@@ -180,7 +180,98 @@ public class LogTest {
 
 ## ADAPTER 패턴
 
-![Adpater Pattern](https://user-images.githubusercontent.com/56071088/116957675-68b98e00-acd3-11eb-82ad-10434898d855.png)
-
-* 한 클래스의 인터페이스를 클라이언트에서 사용하고자 하는 인터페이스로 변환하는 패턴
+* ***한 클래스의 인터페이스를 클라이언트에서 사용하고자 하는 인터페이스로 변환하는 패턴***
 * 호환성이 없는 인터페이스 때문에 함께 동작할 수 없는 클래스들이 함께 작동하도록 해준다.
+
+![adapter-pattern-1](https://user-images.githubusercontent.com/56071088/116960576-c94cc900-acdb-11eb-9be2-76b0b9a6286e.png)
+
+`Client`
+
+써드파티 라이브러리나 외부시스템을 사용하려는 쪽이다.
+
+`Adaptee`
+
+써드파티 라이브러리나 외부시스템을 의미한다.
+
+`Target Interface`
+
+Adapter 가 구현(implements) 하는 인터페이스이다. **클라이언트는 Target Interface 를 통해 Adaptee 인 써드파티 라이브러리를 사용하게 된다.**
+
+`Adapter`
+
+**Client 와 Adaptee 중간에서 호환성이 없는 둘을 연결시켜주는 역할을 담당한다.** Target Interface 를 구현하며, 클라이언트는 Target Interface 를 통해 어댑터에 요청을 보낸다. 어댑터는 클라이언트의 요청을 Adaptee 가 이해할 수 있는 방법으로 전달하고, 처리는 Adaptee 에서 이루어진다.
+
+![adpter pattern 사용 예제](https://user-images.githubusercontent.com/56071088/116960706-2e082380-acdc-11eb-9d86-5ecfdae92c2b.png)
+
+|사진 1|사진 2|code|
+|---|---|---|
+|Client|WebClient|AdapterDemo|
+|Target Interface|WebRequester|WebRequester|
+|Adapter|WebAdapter|WebAdapter|
+|Adaptee|WebService|FancyRequester|
+
+예시 code)
+```java
+// Adapter
+public class WebClient {
+    private WebRequester webRequester;
+
+    public WebClient(WebRequester webRequester) {
+        this.webRequester = webRequester;
+    }
+
+    public void doWork() {
+        webRequester.requestHandler();
+    }
+}
+
+// Target interface
+public interface WebRequester {
+    void requestHandler();
+}
+
+public class OldWebRequester implements WebRequester {
+    @Override
+    public void requestHandler() {
+        System.out.println("OldWebRequester is working");
+    }
+}
+
+// Adaptee
+public class FancyRequester {
+    public void fancyRequestHandler() {
+        System.out.println("Yay! fancyRequestHandler is called!");
+    }
+}
+
+public class WebAdapter implements WebRequester {
+    private FancyRequester fancyRequester;
+
+    public WebAdapter(FancyRequester fancyRequester) {
+        this.fancyRequester = fancyRequester;
+    }
+
+    @Override
+    public void requestHandler() {
+        fancyRequester.fancyRequestHandler();
+    }
+}
+
+// Client
+public class AdapterDemo {
+    public static void main(String[] args) {
+        WebAdapter adapter = new WebAdapter(new FancyRequester());
+        WebClient client = new WebClient(adapter);
+        client.doWork();
+    }
+}
+```
+
+### 어댑터 패턴 정리
+* Adaptee 를 감싸고, Target Interface 만을 클라이언트에게 드러낸다.
+* Target Interface 를 구현하여 클라이언트가 예상하는 인터페이스가 되도록 Adaptee 의 인터페이스를 간접적으로 변경한다.
+* Adaptee 가 기대하는 방식으로 클라이언트의 요청을 간접적으로 변경한다.
+* 호환되지 않는 우리의 인터페이스와 Adaptee 를 함께 사용할 수 있다.
+
+
+출처 : https://yaboong.github.io/design-pattern/2018/10/15/adapter-pattern/
