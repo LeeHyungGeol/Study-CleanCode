@@ -210,7 +210,7 @@ EX) 외부 API를 사용할 때
 
 Portfolio 클래스는 외부 API인 TokyoStockExchange를 사용해 portfolio 값을 계산한다. 따라서 Test Code는 시세 변화에 영향을 받게 되고, 이러한 5분 마다 바뀌는 API로 Test code를 짜기란 쉽지 않다. 
 
-* -> **외부 API를 사용하는 클래스는 외부 API를 인터페이스로 한번 감싸자!**
+* -> **외부 API를 사용하는 클래스는 외부 API를 `인터페이스`로 한번 감싸자!**
 
 ```java
 // 1. 외부 API인 TokyoStockExchange 대신 StockExchange interface 구현
